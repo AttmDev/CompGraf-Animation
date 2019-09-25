@@ -40,9 +40,12 @@ mat_translad = numpy.array([[1, 0, 0, 0],
 class Objeto():
     def __init__(self, list_pts, listaArestas):
         self.listPts = numpy.array(list_pts)
-        # numpy.matmul(self.listPts, mat_translad)
         self.listaArestas = listaArestas
-        # print(self.listPts)
+        xc = (abs(self.listPts[4][0]) - abs(self.listPts[0][0])) / 2
+        yc = (abs(self.listPts[3][1]) - abs(self.listPts[1][1])) / 2
+        zc = (abs(self.listPts[2][2]) - abs(self.listPts[5][2])) / 2
+        self.center = [xc, yc, zc]
+        self.relativeCenter = [xc, yc, zc]
 
     def rotateX(self):
         self.listPts = numpy.matmul(self.listPts, mat_rot_x)
@@ -52,6 +55,15 @@ class Objeto():
 
     def drawObject(self):
         return numpy.matmul(self.listPts, mat_translad)
+
+    def getCenter(self):
+        return self.center
+
+    def getRelativeCenter(self):
+        r = numpy.copy(self.relativeCenter)
+        r[0] += translX
+        r[1] += translY
+        return r
 
     def drawLines(self):
         global screen
@@ -70,7 +82,9 @@ class Objeto():
 
     def moveObject(self, matTranslad):
         self.listPts = numpy.matmul(self.listPts, matTranslad)
-
+        self.relativeCenter[0] += matTranslad[3][0]
+        self.relativeCenter[1] += matTranslad[3][1]
+        self.relativeCenter[2] += matTranslad[3][2]
 
 
 class Aresta():
@@ -110,12 +124,12 @@ vel2 = numpy.array([[1, 0, 0, 0],
                     [-1, -1, 0, 1]
                    ])
 
-quadroChave1 = numpy.array([[590, 360, 0, 2],
-                            [640, 310, 0, 2],
-                            [640, 360, 50, 2],
-                            [640, 410, 0, 2],
-                            [690, 360, 0, 2],
-                            [640, 360, -50, 2]])
+quadroChave1 = numpy.array([[590, 360, 0, 1],
+                            [640, 310, 0, 1],
+                            [640, 360, 50, 1],
+                            [640, 410, 0, 1],
+                            [690, 360, 0, 1],
+                            [640, 360, -50, 1]])
 
 quadroChave2 = numpy.array([[738, 508, 0, 1],
                              [788, 458, 0, 1],
@@ -124,13 +138,8 @@ quadroChave2 = numpy.array([[738, 508, 0, 1],
                              [838, 508, 0, 1],
                              [788, 508, -50, 1]])
 
-quadroChave3 = numpy.array([[882.40207879, 628.95322325, 6.37450096 , 1],
-                             [886.1665114, 613.5782066, -62.54166485 , 1],
-                             [945.36727084, 619.16884033, -24.27921726, 1],
-                             [925.830739, 683.87431698, -3.50603226, 1],
-                             [929.5951716, 668.49930033, -72.42219808 , 1],
-                             [886.62997955, 678.28368325, -41.76847985, 1]])
-
+quadro1 = numpy.array([641, 361, 0])
+quadro2 = numpy.array([782, 502, 0])
 
 def compare(mat1, mat2):
     total = len(mat1)*len(mat1[0])
@@ -141,7 +150,7 @@ def compare(mat1, mat2):
                 mi += 1
             j+=j
         i+=i
-    print(mi/total)
+    # print(mi/total)
     if mi/total >= 0.8:
         return True
     return False
@@ -163,8 +172,15 @@ while 1:
     teste.rotateY()
     teste.moveObject(speed)
     mat = teste.drawLines()
-    if compare(mat, quadroChave2):
+    print("---------------------------------")
+    print(teste.getCenter())
+    r = teste.getRelativeCenter()
+    print(r)
+
+    if numpy.allclose(r, quadro2):
         speed = vel2
+    if numpy.allclose(r, quadro1):
+        speed = vel
 
 
     pygame.display.flip()
