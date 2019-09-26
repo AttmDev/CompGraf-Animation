@@ -53,26 +53,32 @@ class Objeto():
         self.center = [xc, yc, zc]
         self.relativeCenter = [xc, yc, zc]
 
+    #função de rotação em X
     def rotateX(self):
         self.listPts = numpy.matmul(self.listPts, mat_rot_x)
 
+    #função de rotação em Y
     def rotateY(self):
         self.listPts = numpy.matmul(self.listPts, mat_rot_y)
 
+    #função que passa por todos os pntos  e cria os vértices para ser desenhados
     def drawObject(self):
         aux = numpy.matmul(self.listPts, mat_proj)
         # print(aux)
         return numpy.matmul(aux, mat_translad)
 
+    #esse função passa o centro do objeto
     def getCenter(self):
         return self.center
 
+    #retorna o centro relativo a uma translação
     def getRelativeCenter(self):
         r = numpy.copy(self.relativeCenter)
         r[0] += translX
         r[1] += translY
         return r
 
+    #desenha as arestas
     def drawLines(self):
         global screen
         mat = self.drawObject()
@@ -88,12 +94,14 @@ class Objeto():
             pygame.draw.line(screen, (0, 0, 0), ponto_origem, ponto_destino)
         return mat
 
+    #função que efetua as translações
     def moveObject(self, matTranslad):
         self.listPts = numpy.matmul(self.listPts, matTranslad)
         self.relativeCenter[0] += matTranslad[3][0]
         self.relativeCenter[1] += matTranslad[3][1]
         self.relativeCenter[2] += matTranslad[3][2]
 
+    #função de cisalhamento
     def cisalhar(self, a, b):
         cis = numpy.array([[1, b, 0, 0],
                            [a, 1, 0, 0],
@@ -105,10 +113,6 @@ class Objeto():
 class Aresta():
     def __init__(self, ptOrig, ptDest):
         self.ptOrig, self.ptDest = ptOrig, ptDest
-
-class Anima():
-    def __init__(self, width, height):
-        pass
 
 # ---------------------------------- VARIAVEIS ----------------------------------
 # [x y z] como vetor linha
@@ -126,19 +130,20 @@ arestas = [Aresta(0, 1), Aresta(0, 2), Aresta(0, 3), Aresta(0, 5),
 
 teste = Objeto(cordenadas, arestas)
 
-# velocidade do objeto
+# velocidade do objeto em descida
 vel = numpy.array([[1, 0, 0, 0],
                     [0, 1, 0, 0],
                     [0, 0, 1, 0],
                     [1, 1, 0, 1]
                    ])
-
+#vel do objeto em subida
 vel2 = numpy.array([[1, 0, 0, 0],
                     [0, 1, 0, 0],
                     [0, 0, 1, 0],
                     [-1, -1, 0, 1]
                    ])
 
+#quadro que define a animação do objeto
 quadroChave1 = numpy.array([[590, 360, 0, 1],
                             [640, 310, 0, 1],
                             [640, 360, 50, 1],
@@ -146,6 +151,7 @@ quadroChave1 = numpy.array([[590, 360, 0, 1],
                             [690, 360, 0, 1],
                             [640, 360, -50, 1]])
 
+#quadro que define a animação do objeto
 quadroChave2 = numpy.array([[738, 508, 0, 1],
                              [788, 458, 0, 1],
                              [788, 508, 50, 1],
@@ -153,46 +159,40 @@ quadroChave2 = numpy.array([[738, 508, 0, 1],
                              [838, 508, 0, 1],
                              [788, 508, -50, 1]])
 
+#aux dos quadros chave
 quadro1 = numpy.array([641, 361, 0])
 quadro2 = numpy.array([782, 502, 0])
 
-def compare(mat1, mat2):
-    total = len(mat1)*len(mat1[0])
-    mi = 0
-    for i in range(len(mat1)):
-        for j in range(len(mat1[i])):
-            if mat1[i][j] >= mat2[i][j]:
-                mi += 1
-            j+=j
-        i+=i
-    # print(mi/total)
-    if mi/total >= 0.8:
-        return True
-    return False
 
 # ---------------------------------- GAME LOOP ----------------------------------
 pygame.init()
 
-screen = pygame.display.set_mode((win_width, win_height))
+screen = pygame.display.set_mode((win_width, win_height), pygame.FULLSCREEN)
 i = 0
-a, b = 0, 0.01
+a, b = 0, 0
 speed = vel
-while 1:
+segundo_quadro = False
+running = True
+
+while running:
     clock.tick(30)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-    screen.fill((255, 255, 255))
-    teste.rotateX()
-    teste.rotateY()
-    teste.rotateY()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+    screen.fill((200, 200, 200))
+
+    if segundo_quadro:
+        teste.rotateX()
+        teste.rotateY()
+        teste.rotateY()
+        teste.cisalhar(a, b)
+
     teste.moveObject(speed)
-    teste.cisalhar(a, b)
     mat = teste.drawLines()
-    # print("---------------------------------")
-    # print(teste.getCenter())
     r = teste.getRelativeCenter()
-    # print(r)
 
     if numpy.allclose(r, quadro2):
         a, b = 0, -0.02
@@ -200,7 +200,7 @@ while 1:
     if numpy.allclose(r, quadro1):
         a, b = 0, 0.02
         speed = vel
+        segundo_quadro = True
 
 
     pygame.display.flip()
-
