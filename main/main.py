@@ -35,6 +35,12 @@ mat_translad = numpy.array([[1, 0, 0, 0],
                             [translX, translY, 0, 1]
                            ])
 
+# Matriz de projeção perspectiva
+mat_proj = numpy.array([[1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 0, -1/750],
+                        [0, 0, 0, 1]])
+
 
 # recebe uma lista de cordenadas e lista de arestas
 class Objeto():
@@ -54,7 +60,9 @@ class Objeto():
         self.listPts = numpy.matmul(self.listPts, mat_rot_y)
 
     def drawObject(self):
-        return numpy.matmul(self.listPts, mat_translad)
+        aux = numpy.matmul(self.listPts, mat_proj)
+        # print(aux)
+        return numpy.matmul(aux, mat_translad)
 
     def getCenter(self):
         return self.center
@@ -85,6 +93,13 @@ class Objeto():
         self.relativeCenter[0] += matTranslad[3][0]
         self.relativeCenter[1] += matTranslad[3][1]
         self.relativeCenter[2] += matTranslad[3][2]
+
+    def cisalhar(self, a, b):
+        cis = numpy.array([[1, b, 0, 0],
+                           [a, 1, 0, 0],
+                           [0, 0, 1, 0],
+                           [0, 0, 0, 1]])
+        self.listPts = numpy.matmul(self.listPts, cis)
 
 
 class Aresta():
@@ -160,6 +175,7 @@ pygame.init()
 
 screen = pygame.display.set_mode((win_width, win_height))
 i = 0
+a, b = 0, 0.01
 speed = vel
 while 1:
     clock.tick(30)
@@ -171,15 +187,18 @@ while 1:
     teste.rotateY()
     teste.rotateY()
     teste.moveObject(speed)
+    teste.cisalhar(a, b)
     mat = teste.drawLines()
-    print("---------------------------------")
-    print(teste.getCenter())
+    # print("---------------------------------")
+    # print(teste.getCenter())
     r = teste.getRelativeCenter()
-    print(r)
+    # print(r)
 
     if numpy.allclose(r, quadro2):
+        a, b = 0, -0.02
         speed = vel2
     if numpy.allclose(r, quadro1):
+        a, b = 0, 0.02
         speed = vel
 
 
