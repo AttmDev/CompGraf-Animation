@@ -47,42 +47,41 @@ class Objeto():
     def __init__(self, list_pts, listaArestas):
         self.listPts = numpy.array(list_pts)
         self.listaArestas = listaArestas
-        xc = (abs(self.listPts[4][0]) - abs(self.listPts[0][0])) / 2
-        yc = (abs(self.listPts[3][1]) - abs(self.listPts[1][1])) / 2
-        zc = (abs(self.listPts[2][2]) - abs(self.listPts[5][2])) / 2
+        xc = ((self.listPts[4][0]) + (self.listPts[0][0])) / 2
+        yc = ((self.listPts[3][1]) + (self.listPts[1][1])) / 2
+        zc = ((self.listPts[2][2]) + (self.listPts[5][2])) / 2
         self.center = [xc, yc, zc]
         self.relativeCenter = [xc, yc, zc]
 
-    #função de rotação em X
-    def rotateX(self):
-        self.listPts = numpy.matmul(self.listPts, mat_rot_x)
-
-    #função de rotação em Y
-    def rotateY(self):
-        self.listPts = numpy.matmul(self.listPts, mat_rot_y)
-
-    #função que passa por todos os pntos  e cria os vértices para ser desenhados
-    def drawObject(self):
-        aux = numpy.matmul(self.listPts, mat_proj)
-        # print(aux)
-        return numpy.matmul(aux, mat_translad)
-
-    #esse função passa o centro do objeto
+    # esse função retorna o centro do objeto
     def getCenter(self):
         return self.center
 
-    #retorna o centro relativo a uma translação
+    # retorna o centro relativo a uma translação
     def getRelativeCenter(self):
         r = numpy.copy(self.relativeCenter)
         r[0] += translX
         r[1] += translY
         return r
 
-    #desenha as arestas
+    # função de rotação em X
+    def rotateX(self):
+        self.listPts = numpy.matmul(self.listPts, mat_rot_x)
+
+    # função de rotação em Y
+    def rotateY(self):
+        self.listPts = numpy.matmul(self.listPts, mat_rot_y)
+
+    # função que passa por todos os pntos  e cria os vértices para ser desenhados
+    def drawObject(self):
+        aux = numpy.matmul(self.listPts, mat_proj)
+        return numpy.matmul(aux, mat_translad)
+
+
+    # desenha as arestas
     def drawLines(self):
         global screen
         mat = self.drawObject()
-        # print(mat)
 
         for aresta in self.listaArestas:
             ponto_origem = (mat[aresta.ptOrig][0],
@@ -94,12 +93,16 @@ class Objeto():
             pygame.draw.line(screen, (0, 0, 0), ponto_origem, ponto_destino)
         return mat
 
-    #função que efetua as translações
-    def moveObject(self, matTranslad):
+    # função que efetua as translações
+    def moveObject(self, Tx, Ty):
+        matTranslad = numpy.array([[1, 0, 0, 0],
+                                    [0, 1, 0, 0],
+                                    [0, 0, 1, 0],
+                                    [Tx, Ty, 0, 1]
+                                    ])
         self.listPts = numpy.matmul(self.listPts, matTranslad)
-        self.relativeCenter[0] += matTranslad[3][0]
-        self.relativeCenter[1] += matTranslad[3][1]
-        self.relativeCenter[2] += matTranslad[3][2]
+        self.relativeCenter[0] += Tx
+        self.relativeCenter[1] += Ty
 
     #função de cisalhamento
     def cisalhar(self, a, b):
@@ -108,6 +111,13 @@ class Objeto():
                            [0, 0, 1, 0],
                            [0, 0, 0, 1]])
         self.listPts = numpy.matmul(self.listPts, cis)
+
+    def escalar(self, Sx, Sy):
+        e = numpy.array([[Sx, 0, 0, 0],
+                           [0, Sy, 0, 0],
+                           [0, 0, 1, 0],
+                           [0, 0, 0, 1]])
+        self.listPts = numpy.matmul(self.listPts, e)
 
 
 class Aresta():
@@ -130,77 +140,79 @@ arestas = [Aresta(0, 1), Aresta(0, 2), Aresta(0, 3), Aresta(0, 5),
 
 teste = Objeto(cordenadas, arestas)
 
-# velocidade do objeto em descida
-vel = numpy.array([[1, 0, 0, 0],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [1, 1, 0, 1]
-                   ])
-#vel do objeto em subida
-vel2 = numpy.array([[1, 0, 0, 0],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [-1, -1, 0, 1]
-                   ])
-
-#quadro que define a animação do objeto
-quadroChave1 = numpy.array([[590, 360, 0, 1],
-                            [640, 310, 0, 1],
-                            [640, 360, 50, 1],
-                            [640, 410, 0, 1],
-                            [690, 360, 0, 1],
-                            [640, 360, -50, 1]])
-
-#quadro que define a animação do objeto
-quadroChave2 = numpy.array([[738, 508, 0, 1],
-                             [788, 458, 0, 1],
-                             [788, 508, 50, 1],
-                             [788, 558, 0, 1],
-                             [838, 508, 0, 1],
-                             [788, 508, -50, 1]])
-
-#aux dos quadros chave
-quadro1 = numpy.array([641, 361, 0])
-quadro2 = numpy.array([782, 502, 0])
-
 
 # ---------------------------------- GAME LOOP ----------------------------------
 pygame.init()
 
-screen = pygame.display.set_mode((win_width, win_height), pygame.FULLSCREEN)
-i = 0
-a, b = 0, 0
-speed = vel
-segundo_quadro = False
+screen = pygame.display.set_mode((win_width, win_height))
+
 running = True
+rotacaoX = False
+rotacaoY = False
+movX = False
+movY = False
 
 while running:
-    clock.tick(30)
+    clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
+
+            # Comandos de Rotação
+            if event.key == pygame.K_r:
+                if rotacaoX == False:
+                    rotacaoX = True
+                else:
+                    rotacaoX = False
+            if event.key == pygame.K_y:
+                if rotacaoY == False:
+                    rotacaoY = True
+                else:
+                    rotacaoY = False
+
+            # Comandos de Escala
+            if event.key == pygame.K_w:
+                teste.escalar(1, 2)
+            if event.key == pygame.K_a:
+                teste.escalar(0.5, 1)
+            if event.key == pygame.K_d:
+                teste.escalar(2, 1)
+            if event.key == pygame.K_s:
+                teste.escalar(1, 0.5)
+
     screen.fill((200, 200, 200))
 
-    if segundo_quadro:
+    if rotacaoX:
         teste.rotateX()
+    if rotacaoY:
         teste.rotateY()
-        teste.rotateY()
-        teste.cisalhar(a, b)
 
-    teste.moveObject(speed)
-    mat = teste.drawLines()
-    r = teste.getRelativeCenter()
+    keyinput = pygame.key.get_pressed()
 
-    if numpy.allclose(r, quadro2):
-        a, b = 0, -0.02
-        speed = vel2
-    if numpy.allclose(r, quadro1):
-        a, b = 0, 0.02
-        speed = vel
-        segundo_quadro = True
+    # Comandos de Movimentação
+    if keyinput[pygame.K_LEFT]:
+        teste.moveObject(-2, 0)
+    if keyinput[pygame.K_RIGHT]:
+        teste.moveObject(2, 0)
+    if keyinput[pygame.K_UP]:
+        teste.moveObject(0, -2)
+    if keyinput[pygame.K_DOWN]:
+        teste.moveObject(0, 2)
 
+    # Comandos de Cisalhamento
+    if keyinput[pygame.K_z]:
+        teste.cisalhar(-0.02, 0)
+    if keyinput[pygame.K_x]:
+        teste.cisalhar(0.02, 0)
+    if keyinput[pygame.K_c]:
+        teste.cisalhar(0, -0.02)
+    if keyinput[pygame.K_v]:
+        teste.cisalhar(0, 0.02)
+
+    teste.drawLines()
+    print(teste.getRelativeCenter())
 
     pygame.display.flip()
