@@ -26,13 +26,13 @@ mat_rot_x = numpy.array([[1, 0, 0, 0],
                          [0, 0, 0, 1]
                          ])
 
-translX, translY = win_width/2, win_height/2
+Tx, Ty = win_width/2, win_height/2
 
 # Matriz de Translação
 mat_translad = numpy.array([[1, 0, 0, 0],
                             [0, 1, 0, 0],
                             [0, 0, 1, 0],
-                            [translX, translY, 0, 1]
+                            [Tx, Ty, 0, 1]
                            ])
 
 # Matriz de projeção perspectiva
@@ -60,8 +60,8 @@ class Objeto():
     # retorna o centro relativo a uma translação
     def getRelativeCenter(self):
         r = numpy.copy(self.relativeCenter)
-        r[0] += translX
-        r[1] += translY
+        r[0] += Tx
+        r[1] += Ty
         return r
 
     # função de rotação em X
@@ -82,7 +82,6 @@ class Objeto():
     def drawLines(self):
         global screen
         mat = self.drawObject()
-
         for aresta in self.listaArestas:
             ponto_origem = (mat[aresta.ptOrig][0],
                             mat[aresta.ptOrig][1])
@@ -93,18 +92,12 @@ class Objeto():
             pygame.draw.line(screen, (0, 0, 0), ponto_origem, ponto_destino)
         return mat
 
-    # função que efetua as translações
+    # função que altera os valores para translaçao
     def moveObject(self, Tx, Ty):
-        matTranslad = numpy.array([[1, 0, 0, 0],
-                                    [0, 1, 0, 0],
-                                    [0, 0, 1, 0],
-                                    [Tx, Ty, 0, 1]
-                                    ])
-        self.listPts = numpy.matmul(self.listPts, matTranslad)
-        self.relativeCenter[0] += Tx
-        self.relativeCenter[1] += Ty
+        mat_translad[3][0] += Tx
+        mat_translad[3][1] += Ty
 
-    #função de cisalhamento
+    # função de cisalhamento
     def cisalhar(self, a, b):
         cis = numpy.array([[1, b, 0, 0],
                            [a, 1, 0, 0],
@@ -118,6 +111,13 @@ class Objeto():
                            [0, 0, 1, 0],
                            [0, 0, 0, 1]])
         self.listPts = numpy.matmul(self.listPts, e)
+
+    def espelhar(self):
+        m = numpy.array([[-1, 0, 0, 0],
+                           [0, -1, 0, 0],
+                           [0, 0, 1, 0],
+                           [0, 0, 0, 1]])
+        self.listPts = numpy.matmul(self.listPts, m)
 
 
 class Aresta():
@@ -149,8 +149,6 @@ screen = pygame.display.set_mode((win_width, win_height))
 running = True
 rotacaoX = False
 rotacaoY = False
-movX = False
-movY = False
 
 while running:
     clock.tick(60)
@@ -183,6 +181,10 @@ while running:
             if event.key == pygame.K_s:
                 teste.escalar(1, 0.5)
 
+            if event.key == pygame.K_e:
+                teste.espelhar()
+
+
     screen.fill((200, 200, 200))
 
     if rotacaoX:
@@ -212,7 +214,8 @@ while running:
     if keyinput[pygame.K_v]:
         teste.cisalhar(0, 0.02)
 
-    teste.drawLines()
-    print(teste.getRelativeCenter())
+
+    mat = teste.drawLines()
+    # print(teste.getRelativeCenter())
 
     pygame.display.flip()
