@@ -107,17 +107,41 @@ class Objeto():
 
     def escalar(self, Sx, Sy):
         e = numpy.array([[Sx, 0, 0, 0],
-                           [0, Sy, 0, 0],
-                           [0, 0, 1, 0],
-                           [0, 0, 0, 1]])
+                         [0, Sy, 0, 0],
+                         [0, 0, 1, 0],
+                         [0, 0, 0, 1]])
         self.listPts = numpy.matmul(self.listPts, e)
 
     def espelhar(self):
         m = numpy.array([[-1, 0, 0, 0],
-                           [0, -1, 0, 0],
+                         [0, -1, 0, 0],
+                         [0, 0, 1, 0],
+                         [0, 0, 0, 1]])
+        self.listPts = numpy.matmul(self.listPts, m)
+
+    def cisalharEscalar(self, a, b, Sx, Sy):
+        cis = numpy.array([[1, b, 0, 0],
+                           [a, 1, 0, 0],
                            [0, 0, 1, 0],
                            [0, 0, 0, 1]])
-        self.listPts = numpy.matmul(self.listPts, m)
+
+        e = numpy.array([[Sx, 0, 0, 0],
+                         [0, Sy, 0, 0],
+                         [0, 0, 1, 0],
+                         [0, 0, 0, 1]])
+
+        matriz = numpy.matmul(cis, e)
+        self.listPts = numpy.matmul(self.listPts, matriz)
+
+    def cisalharMover(self, a, b, Tx, Ty):
+        cis = numpy.array([[1, b, 0, 0],
+                           [a, 1, 0, 0],
+                           [0, 0, 1, 0],
+                           [0, 0, 0, 1]])
+        self.listPts = numpy.matmul(self.listPts, cis)
+        mat_translad[3][0] += Tx
+        mat_translad[3][1] += Ty
+
 
 
 class Aresta():
@@ -214,6 +238,11 @@ while running:
     if keyinput[pygame.K_v]:
         teste.cisalhar(0, 0.02)
 
+    if keyinput[pygame.K_h]:
+        teste.cisalharEscalar(0.5, 0, 1.001, 0)
+
+    if keyinput[pygame.K_u]:
+        teste.cisalharMover(0.02, 0, 2, 0)
 
     mat = teste.drawLines()
     # print(teste.getRelativeCenter())
