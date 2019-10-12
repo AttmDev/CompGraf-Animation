@@ -160,6 +160,9 @@ while running:
                 running = False
 
             # Comandos de Rotação
+            if event.key == pygame.K_p:
+                pygame.display.toggle_fullscreen()
+
             if event.key == pygame.K_r:
                 if rotacaoX == False:
                     rotacaoX = True
