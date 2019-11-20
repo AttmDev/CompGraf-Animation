@@ -82,7 +82,8 @@ class Objeto():
     def drawLines(self):
         global screen
         mat = self.drawObject()
-        for aresta in self.listaArestas:
+        arst = sort_aresta(self.listPts,self.listaArestas) # tentando tirar todos as arestas na parte de tras
+        for aresta in arst:
             ponto_origem = (mat[aresta.ptOrig][0],
                             mat[aresta.ptOrig][1])
 
@@ -124,19 +125,64 @@ class Aresta():
     def __init__(self, ptOrig, ptDest):
         self.ptOrig, self.ptDest = ptOrig, ptDest
 
+
+def sort_aresta(coords, arest):
+    copia_aresta = arest.copy()
+    menor_coord = -9999
+    menor_obj = -999
+    segundo_menor = menor_obj
+    to_remove = []
+    index = 0
+
+    maior_x = 0
+    menor_x = 0
+    for c in coords:
+        if c[2]> menor_coord:
+            segundo_menor = menor_obj
+            menor_coord = c[2]
+            menor_obj = index
+        if c[0]> maior_x:
+            maior_xi = c
+            maior_x = index
+        if c[0]< menor_x:
+            maior_xi = c
+            menor_x = index
+        index += 1
+
+
+    for obj in copia_aresta:
+        if obj.ptOrig == menor_obj or obj.ptDest == menor_obj:
+            to_remove.append(obj)
+    for obj in copia_aresta:
+        if obj.ptOrig == segundo_menor or obj.ptDest == segundo_menor:
+            if not obj.ptOrig == maior_x and not obj.ptOrig == menor_x:
+                if not obj.ptDest == maior_x and not obj.ptDest == menor_x:
+                    to_remove.append(obj)
+
+
+
+    for obj in to_remove:
+        try:
+            copia_aresta.remove(obj)
+        except:
+            pass
+    return copia_aresta
+
 # ---------------------------------- VARIAVEIS ----------------------------------
 # [x y z] como vetor linha
 cordenadas = [
-            [-50, 0, 0, 1],
-            [0, -50, 0, 1],
+            [-35, 0, 25, 1],
+            [-20, 0, -20, 1],
+            [5, -80, 18.75, 1],
+            [20, 0, -20, 1],
+            [35, 0, 20, 1],
             [0, 0, 50, 1],
-            [0, 50, 0, 1],
-            [50, 0, 0, 1],
-            [0, 0, -50, 1]
+            [5, 80, 18.75, 1]
         ]
-arestas = [Aresta(0, 1), Aresta(0, 2), Aresta(0, 3), Aresta(0, 5),
-           Aresta(1, 2), Aresta(1, 4), Aresta(1, 5), Aresta(2, 4),
-           Aresta(2, 3), Aresta(3, 4), Aresta(3, 5), Aresta(4, 5)]
+arestas = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(1, 3),
+           Aresta(0, 2), Aresta(2, 4), Aresta(3, 4), Aresta(4, 5),
+           Aresta(2, 5), Aresta(0, 5), Aresta(5, 6), Aresta(4, 6),
+           Aresta(0, 6), Aresta(1, 6), Aresta(3, 6)]
 
 teste = Objeto(cordenadas, arestas)
 
@@ -163,16 +209,16 @@ while running:
             if event.key == pygame.K_p:
                 pygame.display.toggle_fullscreen()
 
-            if event.key == pygame.K_r:
-                if rotacaoX == False:
-                    rotacaoX = True
-                else:
-                    rotacaoX = False
-            if event.key == pygame.K_y:
-                if rotacaoY == False:
-                    rotacaoY = True
-                else:
-                    rotacaoY = False
+            # if event.key == pygame.K_r:
+            #     if rotacaoX == False:
+            # rotacaoX = True
+                # else:
+                #     rotacaoX = False
+            # if event.key == pygame.K_y:
+            #     if rotacaoY == False:
+            # rotacaoY = True
+                # else:
+                #     rotacaoY = False
 
             # Comandos de Escala
             if event.key == pygame.K_w:
@@ -189,11 +235,12 @@ while running:
 
 
     screen.fill((200, 200, 200))
+    # teste.fill((100, 100, 100))
 
-    if rotacaoX:
-        teste.rotateX()
-    if rotacaoY:
-        teste.rotateY()
+    # if rotacaoX:
+    # teste.rotateX()
+    # if rotacaoY:
+    teste.rotateY()
 
     keyinput = pygame.key.get_pressed()
 
