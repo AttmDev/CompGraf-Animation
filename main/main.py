@@ -44,7 +44,7 @@ mat_proj = numpy.array([[1, 0, 0, 0],
 
 # recebe uma lista de cordenadas e lista de arestas
 class Objeto():
-    def __init__(self, list_pts, listaArestas):
+    def __init__(self, list_pts, listaArestas, listaFaces):
         self.listPts = numpy.array(list_pts)
         self.listaArestas = listaArestas
         xc = ((self.listPts[4][0]) + (self.listPts[0][0])) / 2
@@ -52,6 +52,8 @@ class Objeto():
         zc = ((self.listPts[2][2]) + (self.listPts[5][2])) / 2
         self.center = [xc, yc, zc]
         self.relativeCenter = [xc, yc, zc]
+        self.listaFaces = listaFaces
+
 
     # esse função retorna o centro do objeto
     def getCenter(self):
@@ -85,13 +87,15 @@ class Objeto():
         #arst = sort_aresta(self.listPts,self.listaArestas) # tentando tirar todos as arestas na parte de tras
         #for aresta in arst:
         for aresta in self.listaArestas:
-            ponto_origem = (mat[aresta.ptOrig][0],
-                            mat[aresta.ptOrig][1])
+            ponto_origem = (mat[aresta.ptOrig][0], mat[aresta.ptOrig][1])
+            ponto_destino = (mat[aresta.ptDest][0], mat[aresta.ptDest][1])
+            pygame.draw.line(screen, (70, 60, 140), ponto_origem, ponto_destino)
 
-            ponto_destino = (mat[aresta.ptDest][0],
-                             mat[aresta.ptDest][1])
-
-            pygame.draw.line(screen, (0, 0, 0), ponto_origem, ponto_destino)
+        pontos = []
+        for face in self.listaFaces:
+            for ponto in face:
+                pontos.append([mat[ponto][0], mat[ponto][1]])
+            pygame.draw.polygon(screen, (70, 60, 140), pontos)
         return mat
 
     # função que altera os valores para translaçao
@@ -209,7 +213,7 @@ arestas = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(1, 3),
            Aresta(2, 5), Aresta(0, 5), Aresta(5, 6), Aresta(4, 6),
            Aresta(0, 6), Aresta(1, 6), Aresta(3, 6)]
 
-teste = Objeto(cordenadas, arestas)
+teste = Objeto(cordenadas, arestas, [])
 
 vertices = [[0, 20, 0, 1],
 			[20, 0, 0, 1],
@@ -228,7 +232,16 @@ arestas2 = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3),Aresta(3, 4), Aresta(4, 5),
 			Aresta(6, 7), Aresta(7, 8), Aresta(8, 9), Aresta(9, 10), Aresta(10, 11), Aresta(11, 6),
 			Aresta(0, 6), Aresta(1, 7), Aresta(2, 8), Aresta(3, 9), Aresta(4, 10), Aresta(5, 11)]
 
-prisma = Objeto(vertices, arestas2)
+faces = [[0, 1, 2, 3, 4, 5],
+         [6, 7, 8, 9, 10, 11],
+         [0, 1, 7, 6],
+         [1, 2, 8, 7],
+         [2, 3, 9, 8],
+         [3, 4, 10, 9],
+         [4, 5, 11, 10],
+         [0, 5, 11, 6]]
+
+prisma = Objeto(vertices, arestas2, faces)
 
 
 # ---------------------------------- GAME LOOP ----------------------------------
@@ -285,7 +298,6 @@ while running:
     # teste.rotateX()
     # if rotacaoY:
     teste.rotateY()
-    prisma.rotateY()
 
     keyinput = pygame.key.get_pressed()
 
