@@ -82,8 +82,9 @@ class Objeto():
     def drawLines(self):
         global screen
         mat = self.drawObject()
-        arst = sort_aresta(self.listPts,self.listaArestas) # tentando tirar todos as arestas na parte de tras
-        for aresta in arst:
+        #arst = sort_aresta(self.listPts,self.listaArestas) # tentando tirar todos as arestas na parte de tras
+        #for aresta in arst:
+        for aresta in self.listaArestas:
             ponto_origem = (mat[aresta.ptOrig][0],
                             mat[aresta.ptOrig][1])
 
@@ -210,6 +211,25 @@ arestas = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(1, 3),
 
 teste = Objeto(cordenadas, arestas)
 
+vertices = [[0, 20, 0, 1],
+			[20, 0, 0, 1],
+			[60, 0, 0, 1],
+		 	[80, 20, 0, 1],
+			[60, 40, 0, 1],
+			[20, 40, 0, 1],
+			[0, 20, 40, 1],
+			[20, 0, 40, 1],
+			[60, 0, 40, 1],
+			[80, 20, 40, 1],
+			[60, 40, 40, 1],
+			[20, 40, 40, 1]]
+
+arestas2 = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3),Aresta(3, 4), Aresta(4, 5), Aresta(5, 0),
+			Aresta(6, 7), Aresta(7, 8), Aresta(8, 9), Aresta(9, 10), Aresta(10, 11), Aresta(11, 6),
+			Aresta(0, 6), Aresta(1, 7), Aresta(2, 8), Aresta(3, 9), Aresta(4, 10), Aresta(5, 11)]
+
+prisma = Objeto(vertices, arestas2)
+
 
 # ---------------------------------- GAME LOOP ----------------------------------
 pygame.init()
@@ -265,6 +285,7 @@ while running:
     # teste.rotateX()
     # if rotacaoY:
     teste.rotateY()
+    prisma.rotateY()
 
     keyinput = pygame.key.get_pressed()
 
@@ -294,7 +315,7 @@ while running:
     if keyinput[pygame.K_u]:
         teste.cisalharMover(0.02, 0, 2, 0)
 
-    mat = teste.drawLines()
+    mat = prisma.drawLines()
     # print(teste.getRelativeCenter())
 
     pygame.display.flip()
