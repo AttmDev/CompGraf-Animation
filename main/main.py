@@ -4,7 +4,7 @@ import pygame
 import sys
 
 # Tamanho da tela
-win_width, win_height = 1280, 720
+win_width, win_height = 690, 360
 clock = pygame.time.Clock()
 
 # Ângulos
@@ -26,19 +26,19 @@ mat_rot_x = numpy.array([[1, 0, 0, 0],
                          [0, 0, 0, 1]
                          ])
 
-Tx, Ty = win_width/2, win_height/2
+Tx, Ty = win_width / 2, win_height / 2
 
 # Matriz de Translação
 mat_translad = numpy.array([[1, 0, 0, 0],
                             [0, 1, 0, 0],
                             [0, 0, 1, 0],
                             [Tx, Ty, 0, 1]
-                           ])
+                            ])
 
 # Matriz de projeção perspectiva
 mat_proj = numpy.array([[1, 0, 0, 0],
                         [0, 1, 0, 0],
-                        [0, 0, 0, -1/750],
+                        [0, 0, 0, -1 / 750],
                         [0, 0, 0, 1]])
 
 
@@ -76,7 +76,6 @@ class Objeto():
     def drawObject(self):
         aux = numpy.matmul(self.listPts, mat_proj)
         return numpy.matmul(aux, mat_translad)
-
 
     # desenha as arestas
     def drawLines(self):
@@ -144,6 +143,11 @@ class Objeto():
         mat_translad[3][0] += Tx
         mat_translad[3][1] += Ty
 
+    def zBuffer(self):
+        depth = math.inf
+        for pt in self.listPts:
+            color = (200, 200, 200)
+            print(pt)
 
 
 class Aresta():
@@ -162,18 +166,17 @@ def sort_aresta(coords, arest):
     maior_x = 0
     menor_x = 0
     for c in coords:
-        if c[2]> menor_coord:
+        if c[2] > menor_coord:
             segundo_menor = menor_obj
             menor_coord = c[2]
             menor_obj = index
-        if c[0]> maior_x:
+        if c[0] > maior_x:
             maior_xi = c
             maior_x = index
-        if c[0]< menor_x:
+        if c[0] < menor_x:
             maior_xi = c
             menor_x = index
         index += 1
-
 
     for obj in copia_aresta:
         if obj.ptOrig == menor_obj or obj.ptDest == menor_obj:
@@ -184,8 +187,6 @@ def sort_aresta(coords, arest):
                 if not obj.ptDest == maior_x and not obj.ptDest == menor_x:
                     to_remove.append(obj)
 
-
-
     for obj in to_remove:
         try:
             copia_aresta.remove(obj)
@@ -193,17 +194,21 @@ def sort_aresta(coords, arest):
             pass
     return copia_aresta
 
+    # def zBuffer(self):
+
+
+
 # ---------------------------------- VARIAVEIS ----------------------------------
 # [x y z] como vetor linha
 cordenadas = [
-            [-35, 0, 25, 1],
-            [-20, 0, -20, 1],
-            [5, -80, 18.75, 1],
-            [20, 0, -20, 1],
-            [35, 0, 20, 1],
-            [0, 0, 50, 1],
-            [5, 80, 18.75, 1]
-        ]
+    [-35, 0, 25, 1],
+    [-20, 0, -20, 1],
+    [5, -80, 18.75, 1],
+    [20, 0, -20, 1],
+    [35, 0, 20, 1],
+    [0, 0, 50, 1],
+    [5, 80, 18.75, 1]
+]
 arestas = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(1, 3),
            Aresta(0, 2), Aresta(2, 4), Aresta(3, 4), Aresta(4, 5),
            Aresta(2, 5), Aresta(0, 5), Aresta(5, 6), Aresta(4, 6),
@@ -212,24 +217,23 @@ arestas = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(1, 3),
 teste = Objeto(cordenadas, arestas)
 
 vertices = [[0, 20, 0, 1],
-			[20, 0, 0, 1],
-			[60, 0, 0, 1],
-		 	[80, 20, 0, 1],
-			[60, 40, 0, 1],
-			[20, 40, 0, 1],
-			[0, 20, 40, 1],
-			[20, 0, 40, 1],
-			[60, 0, 40, 1],
-			[80, 20, 40, 1],
-			[60, 40, 40, 1],
-			[20, 40, 40, 1]]
+            [20, 0, 0, 1],
+            [60, 0, 0, 1],
+            [80, 20, 0, 1],
+            [60, 40, 0, 1],
+            [20, 40, 0, 1],
+            [0, 20, 40, 1],
+            [20, 0, 40, 1],
+            [60, 0, 40, 1],
+            [80, 20, 40, 1],
+            [60, 40, 40, 1],
+            [20, 40, 40, 1]]
 
-arestas2 = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3),Aresta(3, 4), Aresta(4, 5), Aresta(5, 0),
-			Aresta(6, 7), Aresta(7, 8), Aresta(8, 9), Aresta(9, 10), Aresta(10, 11), Aresta(11, 6),
-			Aresta(0, 6), Aresta(1, 7), Aresta(2, 8), Aresta(3, 9), Aresta(4, 10), Aresta(5, 11)]
+arestas2 = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(3, 4), Aresta(4, 5), Aresta(5, 0),
+            Aresta(6, 7), Aresta(7, 8), Aresta(8, 9), Aresta(9, 10), Aresta(10, 11), Aresta(11, 6),
+            Aresta(0, 6), Aresta(1, 7), Aresta(2, 8), Aresta(3, 9), Aresta(4, 10), Aresta(5, 11)]
 
 prisma = Objeto(vertices, arestas2)
-
 
 # ---------------------------------- GAME LOOP ----------------------------------
 pygame.init()
@@ -239,9 +243,10 @@ screen = pygame.display.set_mode((win_width, win_height))
 running = True
 rotacaoX = False
 rotacaoY = False
+pixels = []
 
 while running:
-    clock.tick(60)
+    # clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -256,13 +261,13 @@ while running:
             # if event.key == pygame.K_r:
             #     if rotacaoX == False:
             # rotacaoX = True
-                # else:
-                #     rotacaoX = False
+            # else:
+            #     rotacaoX = False
             # if event.key == pygame.K_y:
             #     if rotacaoY == False:
             # rotacaoY = True
-                # else:
-                #     rotacaoY = False
+            # else:
+            #     rotacaoY = False
 
             # Comandos de Escala
             if event.key == pygame.K_w:
@@ -277,16 +282,29 @@ while running:
             if event.key == pygame.K_e:
                 teste.espelhar()
 
-
     screen.fill((200, 200, 200))
+    ar = pygame.PixelArray(screen)
+    print(ar)
+    t = pygame.PixelArray.surface
+    # print(t.__getattribute__())
+    # for i in range(win_width):
+    #     for j in range(win_height):
+    #         # print(screen.get_at(i, j))
+    # #         pixels.append(1)
+    #         x = screen.get_at((i, j))
+    #         # pixels.append(pygame.Surface.get_at(screen, (i, j)))
+
+
+    # print(pixels)
+
     # teste.fill((100, 100, 100))
 
     # if rotacaoX:
     # teste.rotateX()
     # if rotacaoY:
-    teste.rotateY()
-    prisma.rotateY()
-
+    # teste.rotateY()
+    # prisma.rotateY()
+    # prisma.zBuffer()
     keyinput = pygame.key.get_pressed()
 
     # Comandos de Movimentação
