@@ -170,7 +170,55 @@ class Objeto():
         mat_translad[3][0] += Tx
         mat_translad[3][1] += Ty
 
+def curva_bezier(vertices, num_pnts=30):
+    if len(vertices) != 4 or num_pnts < 2:
+        return None
 
+    resultado = []
+
+    x0 = vertices[0][0]
+    x1 = vertices[1][0]
+    x2 = vertices[2][0]
+    x3 = vertices[3][0]
+    
+    y0 = vertices[0][1]
+    y1 = vertices[1][1]
+    y2 = vertices[2][1]
+    y3 = vertices[3][1]
+
+    ax = -x0 + 3 * x1 + -3 * x2 + x3
+    ay = -y0 + 3 * y1 + -3 * y2 + y3
+    bx = 3 * x0 + -6 * x1 + 3 * x2
+    by = 3 * y0 + -6 * y1 + 3 * y2
+    cx = -3 * x0 + 3 * x1
+    cy = -3 * y0 + 3 * y1
+    dx = x0
+    dy = y0
+
+    pointX = dx
+    pointY = dy
+    passos = num_pnts - 1 
+    h = 1.0 / passos
+
+    eq1_x = ax * (h * h * h) + bx * (h * h) + cx * h
+    eq2_x = 6 * ax * (h * h * h) + 2 * bx * (h * h)
+    eq3_x = 6 * ax * (h * h * h)
+    eq1_y = ay * (h * h * h) + by * (h * h) + cy * h
+    eq2_y = 6 * ay * (h * h * h) + 2 * by * (h * h)
+    eq3_y = 6 * ay * (h * h * h)
+
+    resultado.append((int(pointX), int(pointY)))
+
+    for i in range(passos):
+        pointX += eq1_x
+        pointY += eq1_y
+        eq1_x += eq2_x
+        eq1_y += eq2_y
+        eq2_x += eq3_x
+        eq2_y += eq3_y
+        resultado.append((int(pointX), int(pointY)))
+
+    return resultado
 
 class Aresta():
     def __init__(self, ptOrig, ptDest):
@@ -275,6 +323,8 @@ running = True
 rotacaoX = False
 rotacaoY = False
 
+
+
 while running:
     clock.tick(60)
     for event in pygame.event.get():
@@ -315,6 +365,12 @@ while running:
 
     screen.fill((200, 200, 200))
     # teste.fill((100, 100, 100))
+
+    curva_vert = [vertices[2][:2],vertices[4][:2],vertices[8][:2],vertices[10][:2]]
+    # for vert in curva_vert:
+    #     vert += prisma.getCenter()
+    curva = curva_bezier([(x[0], x[1]) for x in curva_vert]) #TODO curva de bezier
+    pygame.draw.lines(screen, pygame.Color("white"), False, curva, 2)
 
     # if rotacaoX:
     # teste.rotateX()
