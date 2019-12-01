@@ -84,24 +84,46 @@ class Objeto():
     def drawLines(self):
         global screen
         mat = self.drawObject()
-        #arst = sort_aresta(self.listPts,self.listaArestas) # tentando tirar todos as arestas na parte de tras
-        #for aresta in arst:
-        for aresta in self.listaArestas:
-            ponto_origem = (mat[aresta.ptOrig][0], mat[aresta.ptOrig][1])
-            ponto_destino = (mat[aresta.ptDest][0], mat[aresta.ptDest][1])
-            pygame.draw.line(screen, (70, 60, 140), ponto_origem, ponto_destino)
 
-        pontos = []
-        for face in self.listaFaces:
-            for ponto in face:
-                pontos.append([mat[ponto][0], mat[ponto][1]])
-            pygame.draw.polygon(screen, (70, 60, 140), pontos)
+
+        self.pinta(self.listaFaces[0], (0, 0, 200), mat)
+        self.pinta(self.listaFaces[2], (0, 0, 100), mat)
+        self.pinta(self.listaFaces[3], (0, 0, 140), mat)
+        self.pinta(self.listaFaces[7], (0, 0, 50), mat)
+
+
+        # pontos = []
+        # pontos2 = []
+        # for face in self.listaFaces:
+        #     for ponto in face:
+        #         pontos.append([mat[ponto][0], mat[ponto][1]])
+        #     pygame.draw.polygon(screen, (128, 25, 25), pontos)
+        #
+        # for ponto in self.listaFaces[0]:
+        #         pontos2.append([mat[ponto][0], mat[ponto][1]])
+        # pygame.draw.polygon(screen, (255, 50, 50), pontos2)
+
+        for aresta in self.listaArestas:
+            if aresta.ptOrig not in [9, 10] and aresta.ptDest not in [9, 10]:
+                ponto_origem = (mat[aresta.ptOrig][0], mat[aresta.ptOrig][1])
+                ponto_destino = (mat[aresta.ptDest][0], mat[aresta.ptDest][1])
+                pygame.draw.line(screen, (255,255,255), ponto_origem, ponto_destino)
+
+
         return mat
 
     # função que altera os valores para translaçao
     def moveObject(self, Tx, Ty):
         mat_translad[3][0] += Tx
         mat_translad[3][1] += Ty
+
+    def pinta(self, faces, cor, mat):
+        pontos = []
+
+        for ponto in faces:
+            pontos.append([mat[ponto][0], mat[ponto][1]])
+        pygame.draw.polygon(screen, cor, pontos)
+
 
     # função de cisalhamento
     def cisalhar(self, a, b):
