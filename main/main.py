@@ -26,19 +26,19 @@ mat_rot_x = numpy.array([[1, 0, 0, 0],
                          [0, 0, 0, 1]
                          ])
 
-Tx, Ty = win_width/2, win_height/2
+Tx, Ty = win_width / 2, win_height / 2
 
 # Matriz de Translação
 mat_translad = numpy.array([[1, 0, 0, 0],
                             [0, 1, 0, 0],
                             [0, 0, 1, 0],
                             [Tx, Ty, 0, 1]
-                           ])
+                            ])
 
 # Matriz de projeção perspectiva
 mat_proj = numpy.array([[1, 0, 0, 0],
                         [0, 1, 0, 0],
-                        [0, 0, 0, -1/750],
+                        [0, 0, 0, -1 / 750],
                         [0, 0, 0, 1]])
 
 
@@ -53,7 +53,6 @@ class Objeto():
         self.center = [xc, yc, zc]
         self.relativeCenter = [xc, yc, zc]
         self.listaFaces = listaFaces
-
 
     # esse função retorna o centro do objeto
     def getCenter(self):
@@ -79,26 +78,34 @@ class Objeto():
         aux = numpy.matmul(self.listPts, mat_proj)
         return numpy.matmul(aux, mat_translad)
 
-
     # desenha as arestas
     def drawLines(self):
         global screen
         mat = self.drawObject()
 
+        (hiddenFaces, facesToDraw) = back_face_culling(self.listaFaces, self.listPts)
+        print(hiddenFaces)
+        print(facesToDraw)
 
-        self.pinta(self.listaFaces[0], (0, 0, 200), mat)
-        self.pinta(self.listaFaces[2], (0, 0, 100), mat)
-        self.pinta(self.listaFaces[3], (0, 0, 140), mat)
-        self.pinta(self.listaFaces[7], (0, 0, 50), mat)
+        for i in facesToDraw:
+            # print(i)
+            self.pinta(self.listaFaces[i], (0, 0, 200), mat)
 
+        # self.pinta(self.listaFaces[0], (0, 0, 200), mat)
+        # self.pinta(self.listaFaces[2], (0, 0, 100), mat)
+        # self.pinta(self.listaFaces[3], (0, 0, 140), mat)
+        # # self.pinta(self.listaFaces[4], (0, 0, 140), mat)
+        # # self.pinta(self.listaFaces[5], (0, 0, 140), mat)
+        # # self.pinta(self.listaFaces[6], (0, 0, 140), mat)
+        # self.pinta(self.listaFaces[7], (0, 0, 50), mat)
 
-        # pontos = []
-        # pontos2 = []
+        pontos = []
+        pontos2 = []
         # for face in self.listaFaces:
         #     for ponto in face:
         #         pontos.append([mat[ponto][0], mat[ponto][1]])
         #     pygame.draw.polygon(screen, (128, 25, 25), pontos)
-        #
+
         # for ponto in self.listaFaces[0]:
         #         pontos2.append([mat[ponto][0], mat[ponto][1]])
         # pygame.draw.polygon(screen, (255, 50, 50), pontos2)
@@ -107,8 +114,7 @@ class Objeto():
             if aresta.ptOrig not in [9, 10] and aresta.ptDest not in [9, 10]:
                 ponto_origem = (mat[aresta.ptOrig][0], mat[aresta.ptOrig][1])
                 ponto_destino = (mat[aresta.ptDest][0], mat[aresta.ptDest][1])
-                pygame.draw.line(screen, (255,255,255), ponto_origem, ponto_destino)
-
+                pygame.draw.line(screen, (255, 255, 255), ponto_origem, ponto_destino)
 
         return mat
 
@@ -123,7 +129,6 @@ class Objeto():
         for ponto in faces:
             pontos.append([mat[ponto][0], mat[ponto][1]])
         pygame.draw.polygon(screen, cor, pontos)
-
 
     # função de cisalhamento
     def cisalhar(self, a, b):
@@ -170,6 +175,7 @@ class Objeto():
         mat_translad[3][0] += Tx
         mat_translad[3][1] += Ty
 
+
 def curva_bezier(vertices, num_pnts=30):
     if len(vertices) != 4 or num_pnts < 2:
         return None
@@ -180,7 +186,7 @@ def curva_bezier(vertices, num_pnts=30):
     x1 = vertices[1][0]
     x2 = vertices[2][0]
     x3 = vertices[3][0]
-    
+
     y0 = vertices[0][1]
     y1 = vertices[1][1]
     y2 = vertices[2][1]
@@ -197,7 +203,7 @@ def curva_bezier(vertices, num_pnts=30):
 
     pointX = dx
     pointY = dy
-    passos = num_pnts - 1 
+    passos = num_pnts - 1
     h = 1.0 / passos
 
     eq1_x = ax * (h * h * h) + bx * (h * h) + cx * h
@@ -220,6 +226,54 @@ def curva_bezier(vertices, num_pnts=30):
 
     return resultado
 
+
+def back_face_culling(listaFaces, vertices):
+    viewer = [0, 0, 1/750]
+    hiddenFaces = []
+    facesToDraw = []
+    # print(viewer)
+    for f in range(0, len(listaFaces)):
+        # definindo os vetores u e v
+        if (len(listaFaces[f]) != 4):
+            # print(len(listaFaces[f]))
+            p1 = vertices[listaFaces[f][5]]
+            p2 = vertices[listaFaces[f][1]]
+            p3 = vertices[listaFaces[f][2]]
+
+        else:
+            p1 = vertices[listaFaces[f][0]]
+            p2 = vertices[listaFaces[f][1]]
+            p3 = vertices[listaFaces[f][3]]
+
+        # p1Aux = p1[0:3]
+        # p2Aux = p2[0:3]
+        # p3Aux = p3[0:3]
+        vetor1 = numpy.subtract(p3[0:3], p2[0:3])
+        # print(vetor1)
+        vetor2 = numpy.subtract(p1[0:3], p2[0:3])
+        # print(vetor2)
+
+        # calculo da normal
+        prodvetorial = numpy.cross(vetor1, vetor2)
+        # print(prodvetorial)
+
+        vetorvisao = numpy.subtract(viewer, p2[0:3])
+
+        # print("vetor visao", vetorvisao)
+
+        prodinterno = numpy.inner(prodvetorial, vetorvisao)
+        # print("produto interno: ", prodinterno)
+        if (prodinterno >= 0):
+            print("face escolhida: ", listaFaces[f])
+            facesToDraw.append(f)
+        else:
+            print("exclui a face:", listaFaces[f])
+            hiddenFaces.append(f)
+        print()
+
+    return hiddenFaces, facesToDraw
+
+
 class Aresta():
     def __init__(self, ptOrig, ptDest):
         self.ptOrig, self.ptDest = ptOrig, ptDest
@@ -236,18 +290,17 @@ def sort_aresta(coords, arest):
     maior_x = 0
     menor_x = 0
     for c in coords:
-        if c[2]> menor_coord:
+        if c[2] > menor_coord:
             segundo_menor = menor_obj
             menor_coord = c[2]
             menor_obj = index
-        if c[0]> maior_x:
+        if c[0] > maior_x:
             maior_xi = c
             maior_x = index
-        if c[0]< menor_x:
+        if c[0] < menor_x:
             maior_xi = c
             menor_x = index
         index += 1
-
 
     for obj in copia_aresta:
         if obj.ptOrig == menor_obj or obj.ptDest == menor_obj:
@@ -258,8 +311,6 @@ def sort_aresta(coords, arest):
                 if not obj.ptDest == maior_x and not obj.ptDest == menor_x:
                     to_remove.append(obj)
 
-
-
     for obj in to_remove:
         try:
             copia_aresta.remove(obj)
@@ -267,17 +318,18 @@ def sort_aresta(coords, arest):
             pass
     return copia_aresta
 
+
 # ---------------------------------- VARIAVEIS ----------------------------------
 # [x y z] como vetor linha
 cordenadas = [
-            [-35, 0, 25, 1],
-            [-20, 0, -20, 1],
-            [5, -80, 18.75, 1],
-            [20, 0, -20, 1],
-            [35, 0, 20, 1],
-            [0, 0, 50, 1],
-            [5, 80, 18.75, 1]
-        ]
+    [-35, 0, 25, 1],
+    [-20, 0, -20, 1],
+    [5, -80, 18.75, 1],
+    [20, 0, -20, 1],
+    [35, 0, 20, 1],
+    [0, 0, 50, 1],
+    [5, 80, 18.75, 1]
+]
 arestas = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(1, 3),
            Aresta(0, 2), Aresta(2, 4), Aresta(3, 4), Aresta(4, 5),
            Aresta(2, 5), Aresta(0, 5), Aresta(5, 6), Aresta(4, 6),
@@ -286,21 +338,21 @@ arestas = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(1, 3),
 teste = Objeto(cordenadas, arestas, [])
 
 vertices = [[0, 20, 0, 1],
-			[20, 0, 0, 1],
-			[60, 0, 0, 1],
-		 	[80, 20, 0, 1],
-			[60, 40, 0, 1],
-			[20, 40, 0, 1],
-			[0, 20, 40, 1],
-			[20, 0, 40, 1],
-			[60, 0, 40, 1],
-			[80, 20, 40, 1],
-			[60, 40, 40, 1],
-			[20, 40, 40, 1]]
+            [20, 0, 0, 1],
+            [60, 0, 0, 1],
+            [80, 20, 0, 1],
+            [60, 40, 0, 1],
+            [20, 40, 0, 1],
+            [0, 20, 40, 1],
+            [20, 0, 40, 1],
+            [60, 0, 40, 1],
+            [80, 20, 40, 1],
+            [60, 40, 40, 1],
+            [20, 40, 40, 1]]
 
-arestas2 = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3),Aresta(3, 4), Aresta(4, 5), Aresta(5, 0),
-			Aresta(6, 7), Aresta(7, 8), Aresta(8, 9), Aresta(9, 10), Aresta(10, 11), Aresta(11, 6),
-			Aresta(0, 6), Aresta(1, 7), Aresta(2, 8), Aresta(3, 9), Aresta(4, 10), Aresta(5, 11)]
+arestas2 = [Aresta(0, 1), Aresta(1, 2), Aresta(2, 3), Aresta(3, 4), Aresta(4, 5), Aresta(5, 0),
+            Aresta(6, 7), Aresta(7, 8), Aresta(8, 9), Aresta(9, 10), Aresta(10, 11), Aresta(11, 6),
+            Aresta(0, 6), Aresta(1, 7), Aresta(2, 8), Aresta(3, 9), Aresta(4, 10), Aresta(5, 11)]
 
 faces = [[0, 1, 2, 3, 4, 5],
          [6, 7, 8, 9, 10, 11],
@@ -313,7 +365,6 @@ faces = [[0, 1, 2, 3, 4, 5],
 
 prisma = Objeto(vertices, arestas2, faces)
 
-
 # ---------------------------------- GAME LOOP ----------------------------------
 pygame.init()
 
@@ -322,8 +373,6 @@ screen = pygame.display.set_mode((win_width, win_height))
 running = True
 rotacaoX = False
 rotacaoY = False
-
-
 
 while running:
     clock.tick(60)
@@ -338,16 +387,16 @@ while running:
             if event.key == pygame.K_p:
                 pygame.display.toggle_fullscreen()
 
-            # if event.key == pygame.K_r:
-            #     if rotacaoX == False:
-            # rotacaoX = True
-                # else:
-                #     rotacaoX = False
-            # if event.key == pygame.K_y:
-            #     if rotacaoY == False:
-            # rotacaoY = True
-                # else:
-                #     rotacaoY = False
+            if event.key == pygame.K_r:
+                if rotacaoX == False:
+                    rotacaoX = True
+                else:
+                    rotacaoX = False
+            if event.key == pygame.K_y:
+                if rotacaoY == False:
+                    rotacaoY = True
+                else:
+                    rotacaoY = False
 
             # Comandos de Escala
             if event.key == pygame.K_w:
@@ -362,20 +411,19 @@ while running:
             if event.key == pygame.K_e:
                 teste.espelhar()
 
-
     screen.fill((200, 200, 200))
     # teste.fill((100, 100, 100))
 
-    curva_vert = [vertices[2][:2],vertices[4][:2],vertices[8][:2],vertices[10][:2]]
+    curva_vert = [vertices[2][:2], vertices[4][:2], vertices[8][:2], vertices[10][:2]]
     # for vert in curva_vert:
     #     vert += prisma.getCenter()
-    curva = curva_bezier([(x[0], x[1]) for x in curva_vert]) #TODO curva de bezier
+    curva = curva_bezier([(x[0], x[1]) for x in curva_vert])  # TODO curva de bezier
     pygame.draw.lines(screen, pygame.Color("white"), False, curva, 2)
 
-    # if rotacaoX:
-    # teste.rotateX()
-    # if rotacaoY:
-    teste.rotateY()
+    if rotacaoX:
+        prisma.rotateX()
+    if rotacaoY:
+        prisma.rotateY()
 
     keyinput = pygame.key.get_pressed()
 
