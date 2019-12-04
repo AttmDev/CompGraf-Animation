@@ -87,34 +87,23 @@ class Objeto():
         print(hiddenFaces)
         print(facesToDraw)
 
-        for i in facesToDraw:
-            # print(i)
-            self.pinta(self.listaFaces[i], (0, 0, 200), mat)
+        p_desenhar = []
+        for face in facesToDraw:
+            self.pinta(self.listaFaces[face], (0, 0, 200), mat)
+            for v in faces[face]: #SELECIONA CADA UMA DAS FACES, VE OS VERTICES DELA E PREPARA PRA DESENHAR
+                p_desenhar.append(mat[v])
 
-        # self.pinta(self.listaFaces[0], (0, 0, 200), mat)
-        # self.pinta(self.listaFaces[2], (0, 0, 100), mat)
-        # self.pinta(self.listaFaces[3], (0, 0, 140), mat)
-        # # self.pinta(self.listaFaces[4], (0, 0, 140), mat)
-        # # self.pinta(self.listaFaces[5], (0, 0, 140), mat)
-        # # self.pinta(self.listaFaces[6], (0, 0, 140), mat)
-        # self.pinta(self.listaFaces[7], (0, 0, 50), mat)
+        for point in range(len(p_desenhar)): #DESENHA O VERTICE ATUAL COM O PROXIMO DA FACE, SE FOR O ULTIMO COM O PRIMEIRO
+            try: #BASICAMENTE CONTORNA A FACE
+                pygame.draw.line(screen, (255, 255, 255),(p_desenhar[point][0], p_desenhar[point][1]),(p_desenhar[point+1][0], p_desenhar[point+1][1]))
+            except:
+                try:
+                    pygame.draw.line(screen, (255, 255, 255), (p_desenhar[point][0], p_desenhar[point][1]),
+                                     (p_desenhar[0][0], p_desenhar[0][1]))
+                except:
+                    pass
+        print(p_desenhar)
 
-        pontos = []
-        pontos2 = []
-        # for face in self.listaFaces:
-        #     for ponto in face:
-        #         pontos.append([mat[ponto][0], mat[ponto][1]])
-        #     pygame.draw.polygon(screen, (128, 25, 25), pontos)
-
-        # for ponto in self.listaFaces[0]:
-        #         pontos2.append([mat[ponto][0], mat[ponto][1]])
-        # pygame.draw.polygon(screen, (255, 50, 50), pontos2)
-
-        for aresta in self.listaArestas:
-            if aresta.ptOrig not in [9, 10] and aresta.ptDest not in [9, 10]:
-                ponto_origem = (mat[aresta.ptOrig][0], mat[aresta.ptOrig][1])
-                ponto_destino = (mat[aresta.ptDest][0], mat[aresta.ptDest][1])
-                pygame.draw.line(screen, (255, 255, 255), ponto_origem, ponto_destino)
 
         return mat
 
@@ -418,7 +407,7 @@ while running:
     # for vert in curva_vert:
     #     vert += prisma.getCenter()
     curva = curva_bezier([(x[0], x[1]) for x in curva_vert])  # TODO curva de bezier
-    pygame.draw.lines(screen, pygame.Color("white"), False, curva, 2)
+    # pygame.draw.lines(screen, pygame.Color("white"), False, curva, 2)
 
     if rotacaoX:
         prisma.rotateX()
